@@ -3,60 +3,75 @@
 angular.module('ShoppingListCheck',[])
 .controller('ShoppingListController1',ShoppingListController1)
 .controller('ShoppingListController2',ShoppingListController2)
-.factory('ShoppingListFactory',ShoppingListFactory);
-
-ShoppingListController1.$inject=['ShoppingListFactory'];
-ShoppingListController2.$inject=['ShoppingListFactory'];
-function ShoppingListController1(ShoppingListFactory) {
-  var list1=this;
-  var shoppinglist=ShoppingListFactory(1);
-  list1.items=shoppinglist.getItems();
-  list1.itemName="";
-  list1.itemQuantity="";
-  list1.addItem=function () {
-    try{
-    shoppinglist.addItem('10','Cookies');
-  }
-  catch(error){
-    list.errorMessage=error.message;
-  }
-}
-  list1.removeItem=function(itemIndex){
-    shoppinglist.removeItem(itemIndex);
-
-  };
-}
-
-function ShoppingListService(minItems)
+.service('ShoppingListService',ShoppingListService);
+ShoppingListController1.$inject=['ShoppingListService'];
+function ShoppingListController1(ShoppingListService)
 {
-var service=this;
-var items=[];
-service.addItem= function(itemName,itemQuantity) {
-  if(minItems==1)
+  var list1=this;
+  ShoppingListService.addItem('Cookies','10');
+  ShoppingListService.addItem('Soaps','10');
+  ShoppingListService.addItem('Bootles','10');
+  ShoppingListService.addItem('Eggs','10');
+  ShoppingListService.addItem('Icecream','10');
+  list1.toBuy=ShoppingListService.getItems();
+  list1.removeItem=function(itemIndex){
+  ShoppingListService.removeItem(itemIndex);
+  if(list1.toBuy.length<=0)
   {
-var item={
-  name:itemName,
-  quantity:quantity
-};
-items.push(item);
+  list1.errorMessage="Everything is bought!";
   }
-  else {
-    throw new Error("Everything is bought");
-  }
+}
+}
+ShoppingListController2.$inject=['ShoppingListService'];
 
+function ShoppingListController2(ShoppingListService)
+{
+var list2=this;
+//list2.len=ShoppingListService.oneEntry();
+try {
+  list2.Bought=ShoppingListService.getBoughtItems();
+}
+catch (e) {
+
+list2.errorMessage="Nothing";
+
+}
+
+}
+function ShoppingListService()
+{
+var service = this;
+var toBuy=[];
+var Bought=[];
+var len;
+service.addItem= function(itemName,itemQuantity) {
+
+var item1={
+  name:itemName,
+  quantity:itemQuantity
 };
+
+toBuy.push(item1);
+ };
+
 service.removeItem=function (itemIndex) {
-  items.splice(itemIndex,1);
+  Bought.push(toBuy[itemIndex]);
+   len=1;
+  toBuy.splice(itemIndex,1);
 };
 service.getItems=function () {
-  return items;
+  return toBuy;
 };
+service.getBoughtItems=function()
+{
+  try{
+return Bought;
 }
-function ShoppingListFactory(){
-  var factory= function(minItems)
-  {
-  return new ShoppingListService(minItems);
-  };
-  return factory;
+catch(error)
+{
+  list2.errorMessage="Nothing";
+}
+};
+
 }
 })();
